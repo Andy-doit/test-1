@@ -118,7 +118,6 @@ export function usePortfolioData(portfolio: PortfolioItem | null | undefined) {
         // ignore
       }
 
-      const parsedNoteSector = typeof parsedNote.sector === 'string' ? parsedNote.sector : undefined;
       const parsedNoteWeight = typeof parsedNote.weight === 'number' ? parsedNote.weight : undefined;
       const parsedNoteStopLoss = typeof parsedNote.stopLoss === 'number' ? parsedNote.stopLoss : undefined;
       const parsedNoteTargetPrice = typeof parsedNote.targetPrice === 'number' ? parsedNote.targetPrice : undefined;
@@ -128,7 +127,7 @@ export function usePortfolioData(portfolio: PortfolioItem | null | undefined) {
       return {
         id: s.id,
         ticker: s.symbol,
-        sector: parsedNoteSector ?? s.sector ?? undefined,
+        sector: s.sector ?? undefined,
         purchaseDate: s.purchaseDate ? formatPurchaseDate(s.purchaseDate) : undefined,
         cost,
         marketPrice: market,
