@@ -1,6 +1,6 @@
   "use client";
 
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, ClipboardEvent, useEffect, useRef, useState } from "react";
 import {
   Bold,
   Italic,
@@ -39,6 +39,94 @@ const normalizeContent = (content: TipTapEditorProps["content"]) => {
     "";
 
   return possibleContent;
+};
+
+// Content pasted from another page/Word/Google Docs carries its source's own
+// `class`/`style` (e.g. Tailwind "absolute", "top-0"...). Those attributes can
+// collide with this site's own CSS and pull elements (mainly images) out of the
+// normal document flow. Strip everything except a safe tag/attribute allowlist
+// so pasted content only keeps semantic structure, not source-site positioning.
+const PASTE_ALLOWED_TAGS = new Set([
+  "A", "B", "STRONG", "I", "EM", "U", "BR", "P",
+  "H1", "H2", "H3", "H4", "H5", "H6",
+  "UL", "OL", "LI", "BLOCKQUOTE", "PRE", "CODE",
+  "IMG", "TABLE", "THEAD", "TBODY", "TR", "TH", "TD", "HR",
+]);
+
+const PASTE_ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {
+  A: new Set(["href"]),
+  IMG: new Set(["src", "alt", "title"]),
+};
+
+const SAFE_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+
+// A bare allowlist of the `href`/`src` attribute names isn't enough — the
+// value itself can carry a `javascript:` URI. Resolve against the current
+// origin and only keep it if the scheme is one we're willing to navigate to.
+const sanitizeUrl = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  try {
+    const url = new URL(trimmed, window.location.origin);
+    return SAFE_URL_PROTOCOLS.has(url.protocol) ? trimmed : "";
+  } catch {
+    return "";
+  }
+};
+
+const sanitizePastedHtml = (html: string): string => {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+
+  const walk = (node: Node) => {
+    [...node.childNodes].forEach((child) => {
+      if (child.nodeType === Node.COMMENT_NODE) {
+        child.remove();
+        return;
+      }
+
+      if (child.nodeType !== Node.ELEMENT_NODE) return;
+
+      const element = child as HTMLElement;
+      const tagName = element.tagName;
+
+      if (tagName === "SCRIPT" || tagName === "STYLE") {
+        element.remove();
+        return;
+      }
+
+      if (!PASTE_ALLOWED_TAGS.has(tagName)) {
+        element.replaceWith(...Array.from(element.childNodes));
+        walk(node);
+        return;
+      }
+
+      [...element.attributes].forEach((attribute) => {
+        const name = attribute.name.toLowerCase();
+        const allowed = PASTE_ALLOWED_ATTRIBUTES[tagName]?.has(name) ?? false;
+
+        if (!allowed) {
+          element.removeAttribute(attribute.name);
+          return;
+        }
+
+        if (name === "href" || name === "src") {
+          const safeUrl = sanitizeUrl(attribute.value);
+          if (!safeUrl) {
+            element.removeAttribute(attribute.name);
+          } else {
+            element.setAttribute(attribute.name, safeUrl);
+          }
+        }
+      });
+
+      walk(element);
+    });
+  };
+
+  walk(template.content);
+  return template.innerHTML;
 };
 
 const isEmptyHtml = (html: string) => {
@@ -81,6 +169,20 @@ export function TipTapEditor({ content, onChange }: TipTapEditorProps) {
   const runCommand = (command: string, value?: string) => {
     editorRef.current?.focus();
     document.execCommand(command, false, value);
+    emitChange();
+  };
+
+  const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
+    event.preventDefault();
+
+    const html = event.clipboardData.getData("text/html");
+    if (html) {
+      document.execCommand("insertHTML", false, sanitizePastedHtml(html));
+    } else {
+      const text = event.clipboardData.getData("text/plain");
+      document.execCommand("insertText", false, text);
+    }
+
     emitChange();
   };
 
@@ -182,6 +284,7 @@ export function TipTapEditor({ content, onChange }: TipTapEditorProps) {
         suppressContentEditableWarning
         onInput={emitChange}
         onBlur={emitChange}
+        onPaste={handlePaste}
         className="prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[180px] p-4"
         data-placeholder="Nhập nội dung bài viết..."
       />

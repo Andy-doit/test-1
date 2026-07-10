@@ -52,6 +52,17 @@ export const TIER_DESCRIPTIONS: Record<PortfolioTier, string> = {
 };
 
 /**
+ * Whether a tier's portfolio page shows charts (performance/weight/stop-loss)
+ * or just the holdings table. Free/community is table-only; paid tiers get charts.
+ */
+export const TIER_SHOW_CHARTS: Record<PortfolioTier, boolean> = {
+  [PORTFOLIO_TIERS.COMMUNITY]: false,
+  [PORTFOLIO_TIERS.TITAN]: true,
+  [PORTFOLIO_TIERS.GOLD]: true,
+  [PORTFOLIO_TIERS.PREMIUM]: true,
+};
+
+/**
  * Allowed plans for each tier page
  */
 export const TIER_ALLOWED_PLANS: Record<PortfolioTier, PortfolioTier[]> = {

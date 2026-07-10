@@ -8,28 +8,28 @@ interface EChartBaseProps {
   className?: string;
 }
 
-// Cache the echarts module so it's only imported once
-let echartsModule: typeof import("echarts") | null = null;
-const echartsPromise: Promise<typeof import("echarts")> = import("echarts").then(
-  (mod) => {
-    echartsModule = mod;
-    return mod;
-  },
-);
-
 export const EChartBase = memo(function EChartBase({ option, className }: EChartBaseProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<ECharts | null>(null);
-  const [ready, setReady] = useState(!!echartsModule);
+  // Per-instance module handle instead of a module-level singleton: each of
+  // performanceChart/weightPieChart/stopLossTargetChart is now its own
+  // next/dynamic() boundary, so eChartBase.tsx (and this file's module-scope
+  // state) is duplicated per chunk. A shared `echartsModule`/`echartsPromise`
+  // singleton combined with React StrictMode's dev-only double effect
+  // invoke (mount -> cleanup -> mount) could leave the chart disposed by the
+  // synthetic cleanup without ever being re-initialized, depending on when the
+  // async import resolved relative to that cycle — this component simply
+  // avoids sharing that mutable state across instances.
+  const echartsModuleRef = useRef<typeof import("echarts") | null>(null);
+  const [ready, setReady] = useState(false);
 
-  // Load echarts module once
+  // Load echarts module for this instance
   useEffect(() => {
-    if (echartsModule) {
-      return;
-    }
     let cancelled = false;
-    echartsPromise.then(() => {
-      if (!cancelled) setReady(true);
+    import("echarts").then((mod) => {
+      if (cancelled) return;
+      echartsModuleRef.current = mod;
+      setReady(true);
     });
     return () => {
       cancelled = true;
@@ -38,6 +38,7 @@ export const EChartBase = memo(function EChartBase({ option, className }: EChart
 
   // Initialize chart and update options
   useEffect(() => {
+    const echartsModule = echartsModuleRef.current;
     if (!ready || !ref.current || !echartsModule) return;
 
     // Initialize chart instance if not already created

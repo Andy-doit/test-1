@@ -90,6 +90,19 @@ const sanitizeHtml = (html: string) => {
     TABLE: new Set(["class"]),
   };
 
+  // `class` values are only trusted when they're classes this renderer itself
+  // generates below (full-bleed-image, article-link, table-wrapper...). Content
+  // pasted into the editor from other sites can carry arbitrary classes (e.g.
+  // Tailwind "absolute", "top-0") that collide with this site's own CSS and pull
+  // elements out of the normal document flow, so any other class token is dropped.
+  const ALLOWED_CLASS_TOKENS = new Set([
+    "full-bleed-image",
+    "full-bleed-caption",
+    "article-link",
+    "table-wrapper",
+    "article-content",
+  ]);
+
   const walk = (node: Node) => {
     [...node.childNodes].forEach((child) => {
       if (child.nodeType === Node.ELEMENT_NODE) {
@@ -107,6 +120,20 @@ const sanitizeHtml = (html: string) => {
 
           if (!allowed || name.startsWith("on")) {
             element.removeAttribute(attribute.name);
+            return;
+          }
+
+          if (name === "class") {
+            const filtered = attribute.value
+              .split(/\s+/)
+              .filter((token) => ALLOWED_CLASS_TOKENS.has(token))
+              .join(" ");
+
+            if (filtered) {
+              element.setAttribute("class", filtered);
+            } else {
+              element.removeAttribute("class");
+            }
             return;
           }
 

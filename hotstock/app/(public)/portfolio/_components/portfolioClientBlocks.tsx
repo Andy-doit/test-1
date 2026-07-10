@@ -1,19 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import { Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { PortfolioSectionCard } from "@/components/portfolio/portfolioSectionCard";
-import { PerformanceChart } from "@/components/portfolio/performanceChart";
 import { PortfolioAccessDenied } from "@/components/portfolio/portfolioAccessDenied";
 import { PortfolioErrorState } from "@/components/portfolio/portfolioErrorState";
 import { PortfolioLoadingState } from "@/components/portfolio/portfolioLoadingState";
 import { PortfolioTable } from "@/components/portfolio/portfolioTable";
 import { Signals } from "@/components/portfolio/signals";
-import { StopLossTargetChart } from "@/components/portfolio/stopLossTargetChart";
 import { SupportReasons } from "@/components/portfolio/supportReasons";
-import { WeightPieChart } from "@/components/portfolio/weightPieChart";
 import { getPlanName } from "@/components/user/header/planBadge";
 import { useAuthServer } from "@/hooks/useAuthServer";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
@@ -23,10 +21,26 @@ import {
   PORTFOLIO_TIERS,
   TIER_DESCRIPTIONS,
   TIER_LABELS,
+  TIER_SHOW_CHARTS,
   tierToPlanName,
   type PortfolioTier,
 } from "@/lib/constants/portfolio";
 import { getPlans, type PlanApiResponse, type PlanFieldVisibility } from "@/lib/services/plansService";
+
+// Chart components pull in echarts (heavy) as a module-level side effect, so they're
+// loaded on demand only for tiers that actually show charts (see TIER_SHOW_CHARTS).
+const PerformanceChart = dynamic(
+  () => import("@/components/portfolio/performanceChart").then((mod) => mod.PerformanceChart),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-md bg-muted/20" /> }
+);
+const WeightPieChart = dynamic(
+  () => import("@/components/portfolio/weightPieChart").then((mod) => mod.WeightPieChart),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-md bg-muted/20" /> }
+);
+const StopLossTargetChart = dynamic(
+  () => import("@/components/portfolio/stopLossTargetChart").then((mod) => mod.StopLossTargetChart),
+  { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-md bg-muted/20" /> }
+);
 
 const TAB_CONFIG: Array<{
   key: PortfolioTier;
@@ -194,6 +208,7 @@ export default function PortfolioClientBlocks({
 
   const activePlan = planByTier.get(activeTab);
   const text = getPlanText(activePlan);
+  const showCharts = TIER_SHOW_CHARTS[activeTab];
 
   const hasStocks = Array.isArray(portfolio?.stocks);
   const hasInformation = Array.isArray(portfolio?.information);
@@ -217,7 +232,7 @@ export default function PortfolioClientBlocks({
 
     return (
       <div className="space-y-6">
-        {hasInformation && (
+        {showCharts && hasInformation && (
           <PortfolioSectionCard
             title={text.performanceTitle}
             description={text.performanceDescription}
@@ -233,13 +248,15 @@ export default function PortfolioClientBlocks({
 
         {hasStocks && (
           <>
-            <PortfolioSectionCard
-              title={text.portfolioCompositionTitle}
-              description={text.portfolioCompositionDescription}
-              hasData={weightData.length > 0}
-            >
-              <WeightPieChart data={weightData} />
-            </PortfolioSectionCard>
+            {showCharts && (
+              <PortfolioSectionCard
+                title={text.portfolioCompositionTitle}
+                description={text.portfolioCompositionDescription}
+                hasData={weightData.length > 0}
+              >
+                <WeightPieChart data={weightData} />
+              </PortfolioSectionCard>
+            )}
 
             <PortfolioSectionCard
               className="p-6 space-y-4"
@@ -250,13 +267,15 @@ export default function PortfolioClientBlocks({
               <PortfolioTable rows={tableRows} />
             </PortfolioSectionCard>
 
-            <PortfolioSectionCard
-              title="Gia muc tieu vs Gia dung lo"
-              className="p-6 space-y-4"
-              hasData={stopLossItems.length > 0}
-            >
-              <StopLossTargetChart items={stopLossItems} />
-            </PortfolioSectionCard>
+            {showCharts && (
+              <PortfolioSectionCard
+                title="Gia muc tieu vs Gia dung lo"
+                className="p-6 space-y-4"
+                hasData={stopLossItems.length > 0}
+              >
+                <StopLossTargetChart items={stopLossItems} />
+              </PortfolioSectionCard>
+            )}
           </>
         )}
 
