@@ -1,6 +1,7 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer, Logger } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
+import { timingSafeEqual } from 'crypto';
 import { EmailProcessor } from './processors/email.processor';
 // Removed express adapter import as we use fastify
 import { FastifyAdapter } from '@bull-board/fastify';
@@ -33,7 +34,22 @@ export class QueueModule {
   // Since we are using Fastify, standard MiddlewareConsumer isn't perfectly mapped for bull-board
   // We'll expose a setup function to be called in main.ts
   static setupBullBoard(app: any, queue: Queue, configService: ConfigService) {
-    if (configService.get('app.nodeEnv') === 'production') {
+    // Bull Board is a debugging tool — never mount it outside local development,
+    // including staging (staging deployments run with NODE_ENV=staging, not
+    // 'production', so checking only for 'production' left it exposed there).
+    if (configService.get('app.nodeEnv') !== 'development') {
+      return;
+    }
+
+    const user = configService.get<string>('BULL_BOARD_USER');
+    const pass = configService.get<string>('BULL_BOARD_PASS');
+
+    // Fail closed: if credentials aren't configured, don't mount the dashboard
+    // at all rather than serving it without auth.
+    if (!user || !pass) {
+      new Logger(QueueModule.name).warn(
+        'BULL_BOARD_USER/BULL_BOARD_PASS not set — Bull Board dashboard disabled.',
+      );
       return;
     }
 
@@ -48,15 +64,20 @@ export class QueueModule {
     // Basic auth
     app.register(async (fastify: any) => {
       fastify.addHook('onRequest', async (request: any, reply: any) => {
-        const user = configService.get<string>('BULL_BOARD_USER');
-        const pass = configService.get<string>('BULL_BOARD_PASS');
-
-        if (!user || !pass) return;
-
         const b64auth = (request.headers.authorization || '').split(' ')[1] || '';
         const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
 
-        if (login && password && login === user && password === pass) {
+        const loginBuf = Buffer.from(login ?? '');
+        const userBuf = Buffer.from(user);
+        const passwordBuf = Buffer.from(password ?? '');
+        const passBuf = Buffer.from(pass);
+
+        const loginMatches =
+          loginBuf.length === userBuf.length && timingSafeEqual(loginBuf, userBuf);
+        const passwordMatches =
+          passwordBuf.length === passBuf.length && timingSafeEqual(passwordBuf, passBuf);
+
+        if (loginMatches && passwordMatches) {
           return;
         }
 

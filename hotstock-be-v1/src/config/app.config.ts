@@ -67,9 +67,10 @@ export const validationSchema = Joi.object({
   // Seed
   SEED_ADMIN_PASSWORD: Joi.string().default('change-me-immediately'),
 
-  // Bull Board
-  BULL_BOARD_USER: Joi.string().default('admin'),
-  BULL_BOARD_PASS: Joi.string().default('admin'),
+  // Bull Board — intentionally no default. Dashboard stays disabled
+  // (see QueueModule.setupBullBoard) unless both are explicitly set.
+  BULL_BOARD_USER: Joi.string().allow('').default(''),
+  BULL_BOARD_PASS: Joi.string().allow('').default(''),
 });
 
 export interface AppConfig {
