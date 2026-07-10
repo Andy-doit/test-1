@@ -117,10 +117,13 @@ export class PortfoliosService {
       throw new NotFoundException('Chưa có danh mục đầu tư cho gói này');
     }
 
-    // Cache only after access check passes
-    const response = this.stripEmptyBlocks(portfolio);
-    await this.redis.set(cacheKey, JSON.stringify(response), 'EX', 3600);
-    return response;
+    // Cache only after access check passes.
+    // IMPORTANT: cache the raw (unstripped) portfolio — stripEmptyBlocks is applied
+    // fresh on every read (cache hit or miss). Caching the stripped shape means empty
+    // relations are omitted from the JSON entirely, so a later cache-hit re-stripping
+    // that object would destructure `undefined` and throw.
+    await this.redis.set(cacheKey, JSON.stringify(portfolio), 'EX', 3600);
+    return this.stripEmptyBlocks(portfolio);
   }
 
   // ─── CREATE ────────────────────────────────────────────────────────────────
@@ -327,7 +330,9 @@ export class PortfoliosService {
   }
 
   private stripEmptyBlocks(portfolio: PortfolioWithRelations): PortfolioResponse {
-    const { stocks, information, reasons, signals, ...base } = portfolio;
+    // Defensive against already-stripped input (e.g. a stale cache entry written by
+    // an older version of this method) where a relation key may be missing entirely.
+    const { stocks = [], information = [], reasons = [], signals = [], ...base } = portfolio;
     return {
       ...base,
       ...(stocks.length > 0 ? { stocks } : {}),
