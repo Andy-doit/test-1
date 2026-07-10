@@ -633,12 +633,13 @@ async function seedPortfolios(): Promise<void> {
           createMany: {
             data: data.stocks.map((stock) => ({
               symbol: stock.symbol,
+              sector: stock.sector,
               purchaseDate: new Date(stock.purchaseDate),
               costBasis: stock.costBasis,
               marketPrice: stock.marketPrice,
               quantity: Math.round(stock.weight * 100),
+              // sector lives only in the `sector` column — not duplicated into note.
               note: JSON.stringify({
-                sector: stock.sector,
                 weight: stock.weight,
                 stopLoss: stock.stopLoss,
                 targetPrice: stock.targetPrice,
@@ -674,7 +675,9 @@ async function seedPortfolios(): Promise<void> {
         reasons: {
           createMany: {
             data: data.stocks.map((stock) => ({
-              type: stock.sector,
+              // NOTE: `type` is buy/sell per PortfolioReasonDto's @IsIn(['buy','sell']) contract,
+              // not the stock's sector — sector already lives in the stock's `note` JSON.
+              type: 'buy',
               symbol: stock.symbol,
               content: stock.thesis,
             })),
