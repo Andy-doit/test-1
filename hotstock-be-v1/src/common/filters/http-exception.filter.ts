@@ -17,8 +17,14 @@ interface ErrorResponse {
 }
 
 /**
- * Global exception filter that catches all HttpExceptions and returns
- * a consistent JSON response shape.
+ * Global exception filter that catches ALL exceptions — both NestJS
+ * HttpExceptions and unexpected errors (TypeErrors, Prisma errors, etc.) —
+ * and returns a consistent, sanitized JSON response shape.
+ *
+ * Unexpected (non-HttpException) errors always return a generic 500 message
+ * to the client; the real error and stack are logged server-side only, so
+ * a bug never leaks internal details (DB schema, file paths, library
+ * internals) to callers.
  *
  * Response format:
  * {
@@ -29,37 +35,45 @@ interface ErrorResponse {
  *   path: "/api/v1/..."
  * }
  */
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: HttpException, host: ArgumentsHost): void {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();
     const request = ctx.getRequest<FastifyRequest>();
 
-    const status = exception.getStatus();
-    const exceptionResponse = exception.getResponse();
+    const isHttpException = exception instanceof HttpException;
+    const status = isHttpException
+      ? exception.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    // Extract message from the exception response
+    // Extract message — for unexpected errors, never forward the real
+    // error message to the client (may contain internal details).
     let message: string;
-    if (typeof exceptionResponse === 'string') {
-      message = exceptionResponse;
-    } else if (
-      typeof exceptionResponse === 'object' &&
-      exceptionResponse !== null
-    ) {
-      const responseObj = exceptionResponse as Record<string, unknown>;
-      if (Array.isArray(responseObj.message)) {
-        // class-validator returns an array of messages
-        message = (responseObj.message as string[]).join('; ');
-      } else if (typeof responseObj.message === 'string') {
-        message = responseObj.message;
+    if (isHttpException) {
+      const exceptionResponse = exception.getResponse();
+      if (typeof exceptionResponse === 'string') {
+        message = exceptionResponse;
+      } else if (
+        typeof exceptionResponse === 'object' &&
+        exceptionResponse !== null
+      ) {
+        const responseObj = exceptionResponse as Record<string, unknown>;
+        if (Array.isArray(responseObj.message)) {
+          // class-validator returns an array of messages
+          message = (responseObj.message as string[]).join('; ');
+        } else if (typeof responseObj.message === 'string') {
+          message = responseObj.message;
+        } else {
+          message = exception.message;
+        }
       } else {
         message = exception.message;
       }
     } else {
-      message = exception.message;
+      message = 'Internal Server Error';
     }
 
     // Map status code to error name
@@ -73,11 +87,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
       path: request.url,
     };
 
-    // Log 5xx errors as errors, 4xx as warnings
+    // Log 5xx errors as errors, 4xx as warnings. For non-HttpException
+    // errors, log the real message/stack server-side even though the
+    // client only ever sees the generic message above.
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      const err =
+        exception instanceof Error ? exception : new Error(String(exception));
       this.logger.error(
-        `${request.method} ${request.url} ${status} - ${message}`,
-        exception.stack,
+        `${request.method} ${request.url} ${status} - ${err.message}`,
+        err.stack,
       );
     } else {
       this.logger.warn(
