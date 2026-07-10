@@ -156,7 +156,11 @@ export async function POST(req: Request) {
     const uniqueSuffix = Date.now() + '-' + Math.random().toString(36).slice(2, 9);
     const finalFilename = `${uniqueSuffix}.${originalExt}`;
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    // NOTE: stored outside `public/` — Next.js's static file serving snapshots
+    // the `public/` directory at server startup and does not pick up files
+    // added at runtime, which made every upload 404 until the next restart.
+    // Files here are served dynamically by app/uploads/[...path]/route.ts instead.
+    const uploadDir = path.join(process.cwd(), 'uploads');
 
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });

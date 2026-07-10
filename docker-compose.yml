@@ -94,7 +94,7 @@ services:
     extra_hosts:
       - "localhost:host-gateway"
     volumes:
-      - uploads_data:/app/public/uploads
+      - uploads_data:/app/uploads
     networks:
       - app-network
     restart: unless-stopped
