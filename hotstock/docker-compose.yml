@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile
+    env_file: .env.local
+    volumes:
+      # Persist uploaded files across container restarts.
+      # Without this, public/uploads/ is wiped every time the container is recreated.
+      - uploads_data:/app/public/uploads
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+
+volumes:
+  # Named volume so uploaded images survive container rebuilds.
+  # In a multi-replica / multi-host deployment, replace this with a shared
+  # storage solution (e.g. S3, NFS, or a cloud volume) and update
+  # /api/upload/route.ts to write there instead of the local filesystem.
+  uploads_data:

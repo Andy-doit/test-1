@@ -1,0 +1,2874 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "description": "Đăng nhập bằng email và mật khẩu",
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đăng nhập thành công"
+          },
+          "401": {
+            "description": "Email hoặc mật khẩu không chính xác"
+          },
+          "429": {
+            "description": "Quá nhiều yêu cầu"
+          }
+        },
+        "summary": "Đăng nhập",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "description": "Tạo tài khoản mới",
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Đăng ký thành công"
+          },
+          "409": {
+            "description": "Email đã được sử dụng"
+          },
+          "429": {
+            "description": "Quá nhiều yêu cầu"
+          }
+        },
+        "summary": "Đăng ký",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "description": "Đổi refresh token lấy cặp token mới",
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token mới được cấp"
+          },
+          "401": {
+            "description": "Refresh token không hợp lệ"
+          }
+        },
+        "summary": "Làm mới token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "description": "Thu hồi refresh token",
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đăng xuất thành công"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đăng xuất",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/change-password": {
+      "post": {
+        "description": "Đổi mật khẩu (cần đăng nhập)",
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đổi mật khẩu thành công"
+          },
+          "401": {
+            "description": "Mật khẩu cũ không chính xác"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đổi mật khẩu",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "description": "Gửi mã OTP đặt lại mật khẩu qua email",
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nếu email tồn tại, mã OTP đã được gửi"
+          },
+          "429": {
+            "description": "Quá nhiều yêu cầu"
+          }
+        },
+        "summary": "Quên mật khẩu",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/verify-otp": {
+      "post": {
+        "description": "Xác minh mã OTP và nhận reset token",
+        "operationId": "AuthController_verifyOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP hợp lệ, trả về reset token"
+          },
+          "400": {
+            "description": "OTP không hợp lệ hoặc hết hạn"
+          },
+          "429": {
+            "description": "Quá nhiều lần thử"
+          }
+        },
+        "summary": "Xác minh OTP",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "description": "Đặt lại mật khẩu bằng reset token",
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đặt lại mật khẩu thành công"
+          },
+          "401": {
+            "description": "Token không hợp lệ hoặc đã hết hạn"
+          }
+        },
+        "summary": "Đặt lại mật khẩu",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/users/{id}": {
+      "delete": {
+        "description": "Xóa vĩnh viễn một tài khoản người dùng.",
+        "operationId": "UsersController_deleteUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tài khoản đã bị xóa"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xóa tài khoản (Admin)",
+        "tags": [
+          "Users"
+        ]
+      },
+      "get": {
+        "description": "Xem thông tin chi tiết một người dùng.",
+        "operationId": "UsersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết người dùng (Admin)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users": {
+      "get": {
+        "description": "Lấy danh sách người dùng, phân trang và lọc.",
+        "operationId": "UsersController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "user",
+                "admin",
+                "editor"
+              ]
+            }
+          },
+          {
+            "name": "blocked",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedUsersDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách người dùng (Admin)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/me": {
+      "get": {
+        "description": "Lấy thông tin profile của user đang đăng nhập.",
+        "operationId": "UsersController_getProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy thông tin cá nhân",
+        "tags": [
+          "Users"
+        ]
+      },
+      "patch": {
+        "description": "User tự cập nhật tên người dùng của mình.",
+        "operationId": "UsersController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật thông tin cá nhân",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/role": {
+      "patch": {
+        "description": "Thay đổi role của người dùng. Không thể tự đổi role chính mình.",
+        "operationId": "UsersController_updateRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật phân quyền người dùng (Admin)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/plan": {
+      "patch": {
+        "description": "Chỉ định thủ công một gói trả phí cho người dùng.",
+        "operationId": "UsersController_assignPlan",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignPlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gán gói cho người dùng (Admin)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/block": {
+      "patch": {
+        "description": "Khóa người dùng và buộc đăng xuất.",
+        "operationId": "UsersController_blockUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tài khoản đã bị khóa"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Khóa tài khoản (Admin)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/unblock": {
+      "patch": {
+        "description": "Mở khóa cho người dùng đã bị khóa.",
+        "operationId": "UsersController_unblockUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tài khoản đã được mở khóa"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mở khóa tài khoản (Admin)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/plans": {
+      "get": {
+        "description": "Trả về tất cả gói đang hoạt động, sắp xếp theo sortOrder",
+        "operationId": "PlansController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Danh sách gói"
+          }
+        },
+        "summary": "Danh sách gói (public)",
+        "tags": [
+          "Plans"
+        ]
+      },
+      "post": {
+        "description": "Chỉ admin được tạo gói",
+        "operationId": "PlansController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Gói đã được tạo"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "409": {
+            "description": "Slug đã tồn tại"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo gói mới",
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/plans/admin": {
+      "get": {
+        "description": "Trả về tất cả gói bao gồm gói không hoạt động",
+        "operationId": "PlansController_findAllAdmin",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Danh sách tất cả gói"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách gói (admin)",
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/plans/{slug}": {
+      "get": {
+        "description": "Trả về thông tin chi tiết một gói theo slug",
+        "operationId": "PlansController_findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thông tin gói"
+          },
+          "404": {
+            "description": "Không tìm thấy gói"
+          }
+        },
+        "summary": "Chi tiết gói",
+        "tags": [
+          "Plans"
+        ]
+      },
+      "patch": {
+        "description": "Cập nhật thông tin gói (slug và level không thể thay đổi)",
+        "operationId": "PlansController_update",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gói đã được cập nhật"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy gói"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật gói",
+        "tags": [
+          "Plans"
+        ]
+      },
+      "delete": {
+        "description": "Không thể xóa gói đang có người dùng sử dụng",
+        "operationId": "PlansController_remove",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Gói đã được xóa"
+          },
+          "400": {
+            "description": "Gói đang có người dùng sử dụng"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy gói"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xóa gói",
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/plans/{slug}/field-visibility": {
+      "patch": {
+        "description": "Thiết lập plan được phép xem section nào trong dashboard/danh mục premium",
+        "operationId": "PlansController_upsertFieldVisibility",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Đã cập nhật quyền hiển thị"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy gói"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật quyền xem dữ liệu theo plan",
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/categories": {
+      "get": {
+        "description": "Trả về tất cả danh mục, sắp xếp theo tên",
+        "operationId": "CategoriesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Danh sách danh mục"
+          }
+        },
+        "summary": "Danh sách danh mục",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "post": {
+        "description": "Admin hoặc editor tạo danh mục mới. Slug tự tạo từ tên nếu bỏ trống.",
+        "operationId": "CategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Danh mục đã được tạo"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "409": {
+            "description": "Slug đã tồn tại"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo danh mục",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/categories/{slug}": {
+      "get": {
+        "description": "Trả về thông tin danh mục theo slug",
+        "operationId": "CategoriesController_findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thông tin danh mục"
+          },
+          "404": {
+            "description": "Không tìm thấy danh mục"
+          }
+        },
+        "summary": "Chi tiết danh mục",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "patch": {
+        "description": "Cập nhật tên và/hoặc slug danh mục",
+        "operationId": "CategoriesController_update",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Danh mục đã được cập nhật"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy danh mục"
+          },
+          "409": {
+            "description": "Slug đã tồn tại"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật danh mục",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "delete": {
+        "description": "Không thể xóa danh mục đang có bài viết. Chỉ admin.",
+        "operationId": "CategoriesController_remove",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh mục đã được xóa"
+          },
+          "400": {
+            "description": "Danh mục đang có bài viết"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy danh mục"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xóa danh mục",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/articles": {
+      "get": {
+        "description": "Danh sách bài viết đã xuất bản, phân trang cursor, lọc theo danh mục",
+        "operationId": "ArticlesController_findAll",
+        "parameters": [
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Slug danh mục",
+            "schema": {
+              "example": "phan-tich-ky-thuat",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "ID bài viết cuối",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Số bài/trang (1-50)",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách bài viết phân trang"
+          }
+        },
+        "summary": "Danh sách bài viết",
+        "tags": [
+          "Articles"
+        ]
+      },
+      "post": {
+        "description": "Admin hoặc editor tạo bài viết mới",
+        "operationId": "ArticlesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bài viết đã được tạo"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "409": {
+            "description": "Slug đã tồn tại"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo bài viết",
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/articles/me": {
+      "get": {
+        "description": "Lấy danh sách các bài viết do chính user hiện tại tạo.",
+        "operationId": "ArticlesController_findOwn",
+        "parameters": [
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Lọc theo slug danh mục",
+            "schema": {
+              "example": "phan-tich-ky-thuat",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "ID bài viết cuối cùng (cursor pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Số bài viết mỗi trang (1-50, mặc định 20)",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách bài viết phân trang"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách bài viết của tôi",
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/articles/admin/list": {
+      "get": {
+        "description": "Danh sách tất cả bài viết bao gồm bản nháp, phân trang cursor",
+        "operationId": "ArticlesController_findAllAdmin",
+        "parameters": [
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Lọc theo slug danh mục",
+            "schema": {
+              "example": "phan-tich-ky-thuat",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "ID bài viết cuối cùng (cursor pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Số bài viết mỗi trang (1-50, mặc định 20)",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách bài viết phân trang"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách bài viết (Admin)",
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/articles/admin/{slug}": {
+      "get": {
+        "description": "Trả về bài viết đầy đủ bao gồm bản nháp cho admin/editor",
+        "operationId": "ArticlesController_findBySlugAdmin",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiết bài viết"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy bài viết"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết bài viết (Admin)",
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/articles/{slug}": {
+      "get": {
+        "description": "Trả về bài viết đầy đủ. Nội dung premium yêu cầu gói phù hợp.",
+        "operationId": "ArticlesController_findBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiết bài viết"
+          },
+          "403": {
+            "description": "Cần nâng cấp gói"
+          },
+          "404": {
+            "description": "Không tìm thấy bài viết"
+          }
+        },
+        "summary": "Chi tiết bài viết",
+        "tags": [
+          "Articles"
+        ]
+      },
+      "patch": {
+        "description": "Cập nhật nội dung, metadata, hoặc phân quyền gói",
+        "operationId": "ArticlesController_update",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bài viết đã được cập nhật"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy bài viết"
+          },
+          "409": {
+            "description": "Slug đã tồn tại"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật bài viết",
+        "tags": [
+          "Articles"
+        ]
+      },
+      "delete": {
+        "description": "Xóa vĩnh viễn bài viết. Admin hoặc tác giả của bài viết.",
+        "operationId": "ArticlesController_remove",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bài viết đã được xóa"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy bài viết"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xóa bài viết",
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/portfolios/all": {
+      "get": {
+        "description": "Trả về tất cả danh mục đầu tư để quản lý trong Admin.",
+        "operationId": "PortfoliosController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy tất cả danh mục đầu tư (Admin)",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/portfolios": {
+      "get": {
+        "description": "Trả về danh mục đầu tư mới nhất theo gói. Yêu cầu gói phù hợp.",
+        "operationId": "PortfoliosController_findLatestByPlan",
+        "parameters": [
+          {
+            "name": "plan",
+            "required": true,
+            "in": "query",
+            "description": "Slug gói (vd: gold)",
+            "schema": {
+              "example": "gold",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh mục đầu tư"
+          },
+          "403": {
+            "description": "Cần nâng cấp gói"
+          },
+          "404": {
+            "description": "Không tìm thấy gói hoặc danh mục"
+          }
+        },
+        "summary": "Danh mục đầu tư mới nhất",
+        "tags": [
+          "Portfolios"
+        ]
+      },
+      "post": {
+        "description": "Tạo danh mục đầu tư mới với cổ phiếu, thông tin, lý do, và tín hiệu",
+        "operationId": "PortfoliosController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePortfolioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Danh mục đầu tư đã được tạo"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy gói"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo danh mục đầu tư",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/portfolios/{id}": {
+      "patch": {
+        "description": "Cập nhật danh mục. Dữ liệu lồng nhau sẽ được xóa và tạo lại.",
+        "operationId": "PortfoliosController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePortfolioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Danh mục đầu tư đã được cập nhật"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy danh mục đầu tư"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật danh mục đầu tư",
+        "tags": [
+          "Portfolios"
+        ]
+      },
+      "delete": {
+        "description": "Xóa danh mục đầu tư và tất cả dữ liệu liên quan. Chỉ admin.",
+        "operationId": "PortfoliosController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh mục đầu tư đã được xóa"
+          },
+          "401": {
+            "description": "Chưa đăng nhập"
+          },
+          "403": {
+            "description": "Không có quyền"
+          },
+          "404": {
+            "description": "Không tìm thấy danh mục đầu tư"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xóa danh mục đầu tư",
+        "tags": [
+          "Portfolios"
+        ]
+      }
+    },
+    "/uploads/presign": {
+      "post": {
+        "description": "Tạo URL để client upload trực tiếp file lên AWS S3",
+        "operationId": "UploadsController_generatePresignUrl",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Loại file không được hỗ trợ"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo S3 Pre-signed URL",
+        "tags": [
+          "Uploads"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Health check cho Database (PostgreSQL) và Cache (Redis)",
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        },
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Kiểm tra trạng thái hệ thống",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/dashboard/stats": {
+      "get": {
+        "operationId": "DashboardController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/tags": {
+      "get": {
+        "operationId": "TagsController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tags"
+        ]
+      },
+      "post": {
+        "operationId": "TagsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tags"
+        ]
+      }
+    },
+    "/tags/{slug}": {
+      "patch": {
+        "operationId": "TagsController_update",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tags"
+        ]
+      },
+      "delete": {
+        "operationId": "TagsController_remove",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tags"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "HotStock API Documentation",
+    "description": "",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "Email đăng nhập"
+          },
+          "password": {
+            "type": "string",
+            "example": "password123",
+            "description": "Mật khẩu"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "Email đăng ký"
+          },
+          "username": {
+            "type": "string",
+            "example": "johndoe",
+            "description": "Tên người dùng"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Nguyễn Văn A",
+            "description": "Họ và tên"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "0912345678",
+            "description": "Số điện thoại"
+          },
+          "password": {
+            "type": "string",
+            "example": "password123",
+            "description": "Mật khẩu (tối thiểu 8 ký tự)"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "example": "password123",
+            "description": "Xác nhận mật khẩu"
+          }
+        },
+        "required": [
+          "email",
+          "username",
+          "password",
+          "confirmPassword"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "description": "Refresh token nhận được khi đăng nhập"
+          }
+        },
+        "required": [
+          "refresh_token"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "oldPassword": {
+            "type": "string",
+            "description": "Mật khẩu hiện tại"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "Mật khẩu mới (tối thiểu 8 ký tự)"
+          }
+        },
+        "required": [
+          "oldPassword",
+          "newPassword"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "Email đã đăng ký"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "VerifyOtpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "Email đã đăng ký"
+          },
+          "otp": {
+            "type": "string",
+            "example": "123456",
+            "description": "Mã OTP 6 chữ số"
+          }
+        },
+        "required": [
+          "email",
+          "otp"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "resetToken": {
+            "type": "string",
+            "description": "Reset token nhận được từ verify-otp"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "Mật khẩu mới (tối thiểu 8 ký tự)"
+          }
+        },
+        "required": [
+          "resetToken",
+          "newPassword"
+        ]
+      },
+      "UserPlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "level": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "level"
+        ]
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "email": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "object"
+          },
+          "phoneNumber": {
+            "type": "object"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "admin",
+              "editor"
+            ]
+          },
+          "provider": {
+            "type": "string"
+          },
+          "confirmed": {
+            "type": "boolean"
+          },
+          "blocked": {
+            "type": "boolean"
+          },
+          "passwordChangedAt": {
+            "type": "object"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/UserPlanDto"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "username",
+          "role",
+          "provider",
+          "confirmed",
+          "blocked",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PaginatedUsersDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "totalPages": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "total",
+          "page",
+          "limit",
+          "totalPages"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "johndoe123",
+            "description": "Tên người dùng mới"
+          }
+        }
+      },
+      "UpdateRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "admin",
+              "editor"
+            ],
+            "description": "Role mới"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "AssignPlanDto": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID của gói cần gán"
+          }
+        },
+        "required": [
+          "planId"
+        ]
+      },
+      "CreatePlanFieldVisibilityDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreatePlanDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Gold",
+            "description": "Tên gói"
+          },
+          "slug": {
+            "type": "string",
+            "example": "gold",
+            "description": "Slug (URL-safe)"
+          },
+          "level": {
+            "type": "number",
+            "example": 3,
+            "description": "Cấp độ gói (0 = free)"
+          },
+          "tagline": {
+            "type": "string",
+            "example": "Gói nâng cao"
+          },
+          "icon": {
+            "type": "string",
+            "example": "shield",
+            "description": "Tên icon để frontend map sang icon UI"
+          },
+          "theme": {
+            "type": "string",
+            "example": "gold",
+            "description": "Theme màu của plan: dark | purple | gold"
+          },
+          "badge": {
+            "type": "string",
+            "example": "Phổ biến nhất"
+          },
+          "monthlyPrice": {
+            "type": "number",
+            "example": 8000000,
+            "description": "Giá hàng tháng (VND)"
+          },
+          "semiAnnualPrice": {
+            "type": "number",
+            "example": 31680000
+          },
+          "originalPrice": {
+            "type": "number",
+            "example": 48000000
+          },
+          "discountPercent": {
+            "type": "number",
+            "example": 34,
+            "description": "% giảm giá (0-100)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Mô tả chi tiết gói"
+          },
+          "features": {
+            "example": [
+              "Feature 1",
+              "Feature 2"
+            ],
+            "description": "Danh sách tính năng",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ctaLabel": {
+            "type": "string",
+            "example": "Chọn Gold"
+          },
+          "isPopular": {
+            "type": "boolean",
+            "example": false
+          },
+          "highlighted": {
+            "type": "boolean",
+            "example": true,
+            "description": "Plan được highlight/featured trên UI"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 3
+          },
+          "fieldVisibility": {
+            "description": "Cấu hình các phần dữ liệu/section được phép hiển thị theo plan",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreatePlanFieldVisibilityDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "slug",
+          "level",
+          "monthlyPrice",
+          "features"
+        ]
+      },
+      "UpdatePlanDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Gold",
+            "description": "Tên gói"
+          },
+          "tagline": {
+            "type": "string",
+            "example": "Gói nâng cao"
+          },
+          "icon": {
+            "type": "string",
+            "example": "shield",
+            "description": "Tên icon để frontend map sang icon UI"
+          },
+          "theme": {
+            "type": "string",
+            "example": "gold",
+            "description": "Theme màu của plan: dark | purple | gold"
+          },
+          "badge": {
+            "type": "string",
+            "example": "Phổ biến nhất"
+          },
+          "monthlyPrice": {
+            "type": "number",
+            "example": 8000000,
+            "description": "Giá hàng tháng (VND)"
+          },
+          "semiAnnualPrice": {
+            "type": "number",
+            "example": 31680000
+          },
+          "originalPrice": {
+            "type": "number",
+            "example": 48000000
+          },
+          "discountPercent": {
+            "type": "number",
+            "example": 34,
+            "description": "% giảm giá (0-100)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Mô tả chi tiết gói"
+          },
+          "features": {
+            "example": [
+              "Feature 1",
+              "Feature 2"
+            ],
+            "description": "Danh sách tính năng",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ctaLabel": {
+            "type": "string",
+            "example": "Chọn Gold"
+          },
+          "isPopular": {
+            "type": "boolean",
+            "example": false
+          },
+          "highlighted": {
+            "type": "boolean",
+            "example": true,
+            "description": "Plan được highlight/featured trên UI"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 3
+          },
+          "fieldVisibility": {
+            "description": "Cấu hình các phần dữ liệu/section được phép hiển thị theo plan",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreatePlanFieldVisibilityDto"
+              }
+            ]
+          }
+        }
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Phân tích kỹ thuật",
+            "description": "Tên danh mục"
+          },
+          "slug": {
+            "type": "string",
+            "example": "phan-tich-ky-thuat",
+            "description": "Slug (tự tạo từ tên nếu bỏ trống)"
+          },
+          "isVisibleOnUI": {
+            "type": "boolean",
+            "example": true,
+            "description": "Có hiển thị trên trang chủ không"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Phân tích kỹ thuật",
+            "description": "Tên danh mục"
+          },
+          "slug": {
+            "type": "string",
+            "example": "phan-tich-ky-thuat",
+            "description": "Slug (tự tạo từ tên nếu bỏ trống)"
+          },
+          "isVisibleOnUI": {
+            "type": "boolean",
+            "example": true,
+            "description": "Có hiển thị trên trang chủ không"
+          }
+        }
+      },
+      "ArticleContentBlockDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "default-block"
+          },
+          "type": {
+            "type": "string",
+            "example": "text"
+          },
+          "content": {
+            "type": "string",
+            "example": "<p>Nội dung...</p>"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "CreateArticleDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Phân tích VN-Index tuần 24",
+            "description": "Tiêu đề bài viết"
+          },
+          "description": {
+            "type": "string",
+            "example": "Tóm tắt nội dung bài viết",
+            "description": "Mô tả ngắn"
+          },
+          "slug": {
+            "type": "string",
+            "example": "phan-tich-vn-index-tuan-24",
+            "description": "Slug URL"
+          },
+          "publishedAt": {
+            "type": "string",
+            "example": "2024-06-15T00:00:00.000Z",
+            "description": "Thời điểm xuất bản"
+          },
+          "contentBlocks": {
+            "example": [
+              {
+                "id": "default-block",
+                "type": "text",
+                "content": "<p>Nội dung...</p>"
+              }
+            ],
+            "description": "Nội dung bài viết dạng block",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArticleContentBlockDto"
+            }
+          },
+          "coverUrl": {
+            "type": "string",
+            "example": "/uploads/cover.jpg"
+          },
+          "categoryId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID danh mục"
+          },
+          "tagIds": {
+            "example": [
+              1,
+              2
+            ],
+            "description": "Mảng ID tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "readPermission": {
+            "type": "string",
+            "example": "public",
+            "description": "Quyền truy cập (public, member, editor, admin)"
+          },
+          "planIds": {
+            "example": [
+              1,
+              2
+            ],
+            "description": "Danh sách plan ID có quyền truy cập",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "slug",
+          "contentBlocks",
+          "categoryId"
+        ]
+      },
+      "UpdateArticleDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Phân tích VN-Index tuần 24",
+            "description": "Tiêu đề bài viết"
+          },
+          "description": {
+            "type": "string",
+            "example": "Tóm tắt nội dung bài viết",
+            "description": "Mô tả ngắn"
+          },
+          "slug": {
+            "type": "string",
+            "example": "phan-tich-vn-index-tuan-24",
+            "description": "Slug URL"
+          },
+          "publishedAt": {
+            "type": "string",
+            "example": "2024-06-15T00:00:00.000Z",
+            "description": "Thời điểm xuất bản"
+          },
+          "contentBlocks": {
+            "example": [
+              {
+                "id": "default-block",
+                "type": "text",
+                "content": "<p>Nội dung...</p>"
+              }
+            ],
+            "description": "Nội dung bài viết dạng block",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArticleContentBlockDto"
+            }
+          },
+          "coverUrl": {
+            "type": "string",
+            "example": "/uploads/cover.jpg"
+          },
+          "categoryId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID danh mục"
+          },
+          "tagIds": {
+            "example": [
+              1,
+              2
+            ],
+            "description": "Mảng ID tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "readPermission": {
+            "type": "string",
+            "example": "public",
+            "description": "Quyền truy cập (public, member, editor, admin)"
+          },
+          "planIds": {
+            "example": [
+              1,
+              2
+            ],
+            "description": "Danh sách plan ID có quyền truy cập",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PortfolioStockDto": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "example": "VNM"
+          },
+          "sector": {
+            "type": "string",
+            "example": "Năng lượng"
+          },
+          "purchaseDate": {
+            "type": "string",
+            "example": "2024-06-01T00:00:00.000Z"
+          },
+          "costBasis": {
+            "type": "number",
+            "example": 85000
+          },
+          "marketPrice": {
+            "type": "number",
+            "example": 92000
+          },
+          "quantity": {
+            "type": "number",
+            "example": 100
+          },
+          "note": {
+            "type": "string",
+            "example": "Mua thêm ở vùng hỗ trợ"
+          }
+        },
+        "required": [
+          "symbol",
+          "purchaseDate",
+          "costBasis",
+          "marketPrice",
+          "quantity"
+        ]
+      },
+      "PortfolioInformationDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2024-06"
+          },
+          "vnindexReturn": {
+            "type": "number",
+            "example": 5.2
+          },
+          "recommendReturn": {
+            "type": "number",
+            "example": 8.7
+          }
+        },
+        "required": [
+          "month",
+          "vnindexReturn",
+          "recommendReturn"
+        ]
+      },
+      "PortfolioReasonDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "buy",
+            "enum": [
+              "buy",
+              "sell"
+            ]
+          },
+          "symbol": {
+            "type": "string",
+            "example": "VNM"
+          },
+          "content": {
+            "type": "string",
+            "example": "Kết quả kinh doanh Q2 tốt hơn kỳ vọng"
+          }
+        },
+        "required": [
+          "type",
+          "symbol",
+          "content"
+        ]
+      },
+      "PortfolioSignalDto": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "example": "VNM"
+          },
+          "signalType": {
+            "type": "string",
+            "example": "breakout"
+          },
+          "description": {
+            "type": "string",
+            "example": "Breakout khỏi vùng kháng cự 90,000"
+          },
+          "targetPrice": {
+            "type": "number",
+            "example": 95000
+          },
+          "stopLoss": {
+            "type": "number",
+            "example": 87000
+          }
+        },
+        "required": [
+          "symbol",
+          "signalType",
+          "description"
+        ]
+      },
+      "CreatePortfolioDto": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID gói"
+          },
+          "publishedAt": {
+            "type": "string",
+            "example": "2024-06-15T00:00:00.000Z",
+            "description": "Ngày công bố"
+          },
+          "stocks": {
+            "description": "Danh sách cổ phiếu",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioStockDto"
+            }
+          },
+          "information": {
+            "description": "Thông tin hiệu suất",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioInformationDto"
+            }
+          },
+          "reasons": {
+            "description": "Lý do mua/bán",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioReasonDto"
+            }
+          },
+          "signals": {
+            "description": "Tín hiệu giao dịch",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioSignalDto"
+            }
+          }
+        },
+        "required": [
+          "planId",
+          "publishedAt",
+          "stocks",
+          "information",
+          "reasons",
+          "signals"
+        ]
+      },
+      "UpdatePortfolioDto": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "number",
+            "example": 1,
+            "description": "ID gói"
+          },
+          "publishedAt": {
+            "type": "string",
+            "example": "2024-06-15T00:00:00.000Z",
+            "description": "Ngày công bố"
+          },
+          "stocks": {
+            "description": "Danh sách cổ phiếu",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioStockDto"
+            }
+          },
+          "information": {
+            "description": "Thông tin hiệu suất",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioInformationDto"
+            }
+          },
+          "reasons": {
+            "description": "Lý do mua/bán",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioReasonDto"
+            }
+          },
+          "signals": {
+            "description": "Tín hiệu giao dịch",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioSignalDto"
+            }
+          }
+        }
+      },
+      "PresignDto": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "example": "avatar.jpg",
+            "description": "Tên file gốc"
+          },
+          "contentType": {
+            "type": "string",
+            "example": "image/jpeg",
+            "description": "MIME type của file"
+          }
+        },
+        "required": [
+          "filename",
+          "contentType"
+        ]
+      },
+      "PresignResponseDto": {
+        "type": "object",
+        "properties": {
+          "uploadUrl": {
+            "type": "string",
+            "description": "URL để client PUT file trực tiếp lên S3"
+          },
+          "fileUrl": {
+            "type": "string",
+            "description": "URL hiển thị của file sau khi upload thành công"
+          },
+          "key": {
+            "type": "string",
+            "description": "S3 Key của file"
+          }
+        },
+        "required": [
+          "uploadUrl",
+          "fileUrl",
+          "key"
+        ]
+      },
+      "CreateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Đầu tư giá trị",
+            "description": "Tên thẻ"
+          },
+          "slug": {
+            "type": "string",
+            "example": "dau-tu-gia-tri"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Đầu tư giá trị",
+            "description": "Tên thẻ"
+          },
+          "slug": {
+            "type": "string",
+            "example": "dau-tu-gia-tri"
+          }
+        }
+      }
+    }
+  }
+}

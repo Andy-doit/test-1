@@ -1,0 +1,41 @@
+# Stage 1: Build
+FROM node:24.10-trixie-slim AS builder
+
+# Tạo thư mục làm việc
+WORKDIR /app
+
+# Copy file cấu hình và cài dependency
+COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+RUN npm install
+
+# Copy toàn bộ source
+COPY . .
+
+# Truyền biến môi trường lúc build để Next.js rewrites nhận diện được backend nội bộ
+ARG BACKEND_URL
+ENV BACKEND_URL=$BACKEND_URL
+
+# Build Next.js
+RUN npm run build
+
+# Stage 2: Production
+FROM node:24.10-trixie-slim AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Copy các file cần thiết từ builder
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.ts ./
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/tsconfig.json ./
+
+# Cổng mặc định của Next.js
+EXPOSE 3000
+
+# Khởi động app
+CMD ["npm", "start"]

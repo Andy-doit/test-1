@@ -1,0 +1,17 @@
+{
+  "name": "hotstock-workspace",
+  "version": "1.0.0",
+  "description": "Hotstock Monorepo Workspace",
+  "scripts": {
+    "test": "node run-tests.js",
+    "test:be": "npm --prefix hotstock-be-v1 run test",
+    "test:fe": "npm --prefix hotstock run test",
+    "test:fe:ui": "npm --prefix hotstock run test:ui"
+  },
+  "dependencies": {
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0"
+  }
+}
