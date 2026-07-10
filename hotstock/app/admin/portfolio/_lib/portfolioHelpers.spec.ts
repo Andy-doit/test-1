@@ -22,6 +22,8 @@ describe("portfolioHelpers", () => {
       "portfolioId",
       "planId",
       "publishedAt",
+      "managerName",
+      "website",
       "information",
       "stocks",
       "reasons",
@@ -43,7 +45,7 @@ describe("portfolioHelpers", () => {
           costBasis: 70,
           marketPrice: 85,
           quantity: 100,
-          note: '{"text":"note","beta":1.2,"mdd":-0.1}',
+          note: '{"text":"note","sector":"FMCG","weight":0.4,"stopLoss":65,"targetPrice":100,"beta":1.2,"mdd":-0.1,"managerName":"Hotstock Team","website":"hotstockvn.com"}',
         },
       ],
       information: [{ id: 1, month: "2024-01", vnindexReturn: 5, recommendReturn: 8 }],
@@ -66,8 +68,14 @@ describe("portfolioHelpers", () => {
     expect(form.planId).toBe(3);
     expect(form.publishedAt).toBe("2024-06-01");
     expect(form.stocks[0].symbol).toBe("VNM");
+    expect(form.stocks[0].sector).toBe("FMCG");
+    expect(form.stocks[0].weight).toBe(0.4);
+    expect(form.stocks[0].stopLoss).toBe(65);
+    expect(form.stocks[0].targetPrice).toBe(100);
     expect(form.stocks[0].beta).toBe(1.2);
     expect(form.stocks[0].mdd).toBe(-0.1);
+    expect(form.managerName).toBe("Hotstock Team");
+    expect(form.website).toBe("hotstockvn.com");
     expect(form.information).toHaveLength(1);
     expect(form.reasons).toHaveLength(1);
     expect(form.signals).toHaveLength(1);
@@ -76,6 +84,8 @@ describe("portfolioHelpers", () => {
   it("builds payloads with empty arrays so saving clears deleted blocks", () => {
     const form = createEmptyForm(PORTFOLIO_TIERS.GOLD, 2);
     form.publishedAt = "2024-06-15";
+    form.managerName = "Hotstock Team";
+    form.website = "hotstockvn.com";
     form.stocks = [
       {
         id: "new-1",
@@ -85,6 +95,9 @@ describe("portfolioHelpers", () => {
         costBasis: 70,
         marketPrice: 85,
         quantity: 100,
+        weight: 0.4,
+        stopLoss: 65,
+        targetPrice: 100,
         beta: 1.2,
         mdd: -0.1,
         note: "My note",
@@ -96,6 +109,19 @@ describe("portfolioHelpers", () => {
     expect(payload.planId).toBe(2);
     expect(payload.stocks).toHaveLength(1);
     expect(payload.stocks[0].symbol).toBe("VNM");
+    expect(payload.stocks[0].sector).toBe("FMCG");
+    // sector lives only on the top-level `sector` field — not duplicated into note.
+    expect(JSON.parse(payload.stocks[0].note)).toMatchObject({
+      text: "My note",
+      weight: 0.4,
+      stopLoss: 65,
+      targetPrice: 100,
+      beta: 1.2,
+      mdd: -0.1,
+      managerName: "Hotstock Team",
+      website: "hotstockvn.com",
+    });
+    expect(JSON.parse(payload.stocks[0].note)).not.toHaveProperty("sector");
     expect(payload.information).toEqual([]);
     expect(payload.reasons).toEqual([]);
     expect(payload.signals).toEqual([]);

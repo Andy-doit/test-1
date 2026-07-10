@@ -77,6 +77,32 @@ export function PortfolioHeader({
               {totalMarketValue.toLocaleString("vi-VN")}
             </div>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="managerName">Người quản lý</Label>
+            <Input
+              id="managerName"
+              value={form.managerName}
+              onChange={(event) =>
+                updateCurrentForm((current) => ({
+                  ...current,
+                  managerName: event.target.value,
+                }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="website">Website</Label>
+            <Input
+              id="website"
+              value={form.website}
+              onChange={(event) =>
+                updateCurrentForm((current) => ({
+                  ...current,
+                  website: event.target.value,
+                }))
+              }
+            />
+          </div>
         </div>
       </div>
     </Card>

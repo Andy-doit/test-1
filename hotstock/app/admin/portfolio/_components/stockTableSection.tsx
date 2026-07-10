@@ -111,6 +111,33 @@ export function StockTableSection({
                 />
               </div>
               <div className="space-y-2">
+                <Label>Tỷ trọng mục tiêu (0-1)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={stock.weight}
+                  onChange={(event) => updateStock(stock.id, "weight", event.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Stop loss (giá)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={stock.stopLoss}
+                  onChange={(event) => updateStock(stock.id, "stopLoss", event.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Target price (giá)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={stock.targetPrice}
+                  onChange={(event) => updateStock(stock.id, "targetPrice", event.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
                 <Label>Beta</Label>
                 <Input
                   type="number"

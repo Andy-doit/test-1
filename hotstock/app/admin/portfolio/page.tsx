@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Save } from "lucide-react";
+import { Loader2, RefreshCw, Save, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { AdminPageHeader } from "@/components/admin/shared/adminPageHeader";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { PORTFOLIO_TIERS, TIER_LABELS, type PortfolioTier } from "@/lib/constant
 import { logger } from "@/lib/utils/logger";
 import {
   createPortfolio,
+  deletePortfolio,
   getAllPortfolios,
   updatePortfolio,
   type PortfolioWithPlan,
@@ -54,6 +55,7 @@ export default function AdminPortfolioPage() {
     useState<Record<PortfolioTier, EditablePortfolioForm>>(createInitialForms);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const form = formsByTier[activeTier];
 
@@ -262,6 +264,9 @@ export default function AdminPortfolioPage() {
           costBasis: 0,
           marketPrice: 0,
           quantity: 0,
+          weight: "",
+          stopLoss: "",
+          targetPrice: "",
           beta: "",
           mdd: "",
           note: "",
@@ -349,6 +354,47 @@ export default function AdminPortfolioPage() {
       toast.error(message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeletePortfolio = async () => {
+    if (isDeleting || !form.portfolioId) return;
+
+    if (
+      !window.confirm(
+        `Xoa toan bo danh muc ${TIER_LABELS[form.tier]} (portfolio #${form.portfolioId})? Hanh dong nay khong the hoan tac.`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      await deletePortfolio(form.portfolioId);
+      await loadPortfolios();
+      toast.success(`Da xoa danh muc ${TIER_LABELS[form.tier]}`);
+    } catch (error) {
+      let message = "Co loi xay ra khi xoa danh muc";
+
+      if (error instanceof Error) {
+        message = error.message;
+      }
+
+      if (typeof error === "object" && error !== null && "response" in error) {
+        const apiError = error as {
+          response?: { data?: { message?: string | string[] } };
+        };
+        const backendMessage = apiError.response?.data?.message;
+        if (Array.isArray(backendMessage)) {
+          message = backendMessage.join(", ");
+        } else if (backendMessage) {
+          message = backendMessage;
+        }
+      }
+
+      toast.error(message);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -462,11 +508,31 @@ export default function AdminPortfolioPage() {
         </Card>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="flex justify-end pt-4">
+      <motion.div variants={itemVariants} className="flex justify-end gap-3 pt-4">
+        {form.portfolioId && (
+          <Button
+            variant="outline"
+            onClick={handleDeletePortfolio}
+            disabled={isDeleting || isSaving}
+            className="h-10 rounded-none border-red-900 bg-[#111] text-[12px] font-black uppercase tracking-widest text-red-400 shadow-[4px_4px_0_#450a0a] transition-all hover:bg-red-950/40 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Dang xoa...
+              </>
+            ) : (
+              <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Xoa danh muc nay
+              </>
+            )}
+          </Button>
+        )}
         <Button
           onClick={handleSavePortfolio}
           className="h-10 min-w-44 rounded-none bg-[#c084fc] text-[12px] font-black uppercase tracking-widest text-black shadow-[4px_4px_0_#a855f7] transition-all hover:bg-[#a855f7] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
-          disabled={isSaving}
+          disabled={isSaving || isDeleting}
         >
           {isSaving ? (
             <>

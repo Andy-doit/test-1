@@ -9,6 +9,9 @@ export type EditableStock = {
   costBasis: number;
   marketPrice: number;
   quantity: number;
+  weight: number | "";
+  stopLoss: number | "";
+  targetPrice: number | "";
   beta: number | "";
   mdd: number | "";
   note: string;
@@ -42,6 +45,8 @@ export type EditablePortfolioForm = {
   portfolioId: number | null;
   planId: number | null;
   publishedAt: string;
+  managerName: string;
+  website: string;
   information: EditableInformation[];
   stocks: EditableStock[];
   reasons: EditableReason[];
@@ -68,6 +73,8 @@ export function createEmptyForm(
     portfolioId: null,
     planId,
     publishedAt: "",
+    managerName: "",
+    website: "",
     information: [],
     stocks: [],
     reasons: [],
@@ -75,44 +82,60 @@ export function createEmptyForm(
   };
 }
 
+interface StockNote {
+  text?: string;
+  note?: string;
+  weight?: number | string;
+  stopLoss?: number | string;
+  targetPrice?: number | string;
+  beta?: number | string;
+  mdd?: number | string;
+  managerName?: string;
+  website?: string;
+}
+
+function parseStockNote(note: string | null | undefined): StockNote {
+  if (!note || !note.trim().startsWith("{")) return {};
+  try {
+    return JSON.parse(note) as StockNote;
+  } catch {
+    // Treat malformed JSON notes as plain text.
+    return {};
+  }
+}
+
+function numberOrEmpty(raw: number | string | undefined): number | "" {
+  if (typeof raw === "number") return raw;
+  if (typeof raw === "string" && raw !== "") return Number(raw);
+  return "";
+}
+
 export function mapPortfolioToForm(
   portfolio: PortfolioWithPlan,
   tier: PortfolioTier,
 ): EditablePortfolioForm {
+  const parsedNotes = (portfolio.stocks ?? []).map((stock) => parseStockNote(stock.note));
+  const firstNoteWithManager = parsedNotes.find((n) => n.managerName || n.website);
+
   return {
     tier,
     portfolioId: portfolio.id,
     planId: portfolio.planId,
     publishedAt: portfolio.publishedAt ? portfolio.publishedAt.slice(0, 10) : "",
+    managerName: firstNoteWithManager?.managerName ?? "",
+    website: firstNoteWithManager?.website ?? "",
     information: (portfolio.information ?? []).map((item) => ({
       id: createId("info"),
       month: item.month,
       vnindexReturn: item.vnindexReturn,
       recommendReturn: item.recommendReturn,
     })),
-    stocks: (portfolio.stocks ?? []).map((stock) => {
-      interface StockNote {
-        text?: string;
-        note?: string;
-        beta?: number | string;
-        mdd?: number | string;
-      }
-
-      let parsedNote: StockNote = {};
-      try {
-        if (stock.note && stock.note.trim().startsWith("{")) {
-          parsedNote = JSON.parse(stock.note) as StockNote;
-        }
-      } catch {
-        // Treat malformed JSON notes as plain text.
-      }
-
+    stocks: (portfolio.stocks ?? []).map((stock, index) => {
+      const parsedNote = parsedNotes[index];
       const isJsonNote = stock.note && stock.note.trim().startsWith("{");
       const noteText = isJsonNote
         ? parsedNote.text ?? parsedNote.note ?? ""
         : stock.note ?? "";
-      const betaRaw = parsedNote.beta;
-      const mddRaw = parsedNote.mdd;
 
       return {
         id: createId("stock"),
@@ -122,18 +145,11 @@ export function mapPortfolioToForm(
         costBasis: stock.costBasis,
         marketPrice: stock.marketPrice,
         quantity: stock.quantity,
-        beta:
-          typeof betaRaw === "number"
-            ? betaRaw
-            : typeof betaRaw === "string" && betaRaw !== ""
-              ? Number(betaRaw)
-              : "",
-        mdd:
-          typeof mddRaw === "number"
-            ? mddRaw
-            : typeof mddRaw === "string" && mddRaw !== ""
-              ? Number(mddRaw)
-              : "",
+        weight: numberOrEmpty(parsedNote.weight),
+        stopLoss: numberOrEmpty(parsedNote.stopLoss),
+        targetPrice: numberOrEmpty(parsedNote.targetPrice),
+        beta: numberOrEmpty(parsedNote.beta),
+        mdd: numberOrEmpty(parsedNote.mdd),
         note: noteText,
       };
     }),
@@ -167,10 +183,16 @@ export function buildPortfolioPayload(form: EditablePortfolioForm) {
       costBasis: Number(stock.costBasis),
       marketPrice: Number(stock.marketPrice),
       quantity: Number(stock.quantity),
+      // sector lives only in the `sector` column above — not duplicated into note.
       note: JSON.stringify({
         text: stock.note.trim(),
+        weight: stock.weight === "" ? undefined : Number(stock.weight),
+        stopLoss: stock.stopLoss === "" ? undefined : Number(stock.stopLoss),
+        targetPrice: stock.targetPrice === "" ? undefined : Number(stock.targetPrice),
         beta: stock.beta === "" ? 0 : Number(stock.beta),
         mdd: stock.mdd === "" ? 0 : Number(stock.mdd),
+        managerName: form.managerName.trim() || undefined,
+        website: form.website.trim() || undefined,
       }),
     })),
     information: form.information.map((item) => ({
