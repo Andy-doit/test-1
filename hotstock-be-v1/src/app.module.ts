@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_PIPE, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_PIPE, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { BullModule } from '@nestjs/bullmq';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 // Custom redis storage because nestjs-throttler-storage-redis is incompatible with Nest v11
 import Redis from 'ioredis';
 import { RedisThrottlerStorage } from './common/throttler/redis-throttler-storage';
@@ -46,11 +46,22 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     PrismaModule,
 
     // 3. Throttler (Rate Limiting via Redis)
+    // Named contexts must match what controllers reference via @Throttle({ name: {...} }),
+    // e.g. auth.controller.ts uses 'medium' and 'long'. ThrottlerGuard is registered
+    // below as a global APP_GUARD — without it these throttlers are never enforced.
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        throttlers: [{ ttl: 60000, limit: 100 }], // default 100 req/min
+        throttlers: [
+          {
+            name: 'default',
+            ttl: config.get<number>('throttler.ttl', 60000),
+            limit: config.get<number>('throttler.limit', 100),
+          },
+          { name: 'medium', ttl: 60000, limit: 20 },
+          { name: 'long', ttl: 600000, limit: 30 },
+        ],
         storage: new RedisThrottlerStorage(
           new Redis({
             host: config.get<string>('redis.host'),
@@ -107,6 +118,13 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditLogInterceptor,
+    },
+    {
+      // Enforces the @Throttle(...) decorators used across controllers (e.g. login,
+      // register, forgot-password). Without this, ThrottlerModule only provides
+      // storage/config — no rate limiting actually happens on any route.
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
